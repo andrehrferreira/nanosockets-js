@@ -9,7 +9,15 @@
         "test": "node test.js"
     },
     "dependencies": {
+        "ffi-napi": "^4.0.3",
         "nan": "^2.14.0",
-        "node-addon-api": "^8.1.0"
+        "node-addon-api": "^8.1.0",
+        "ref-napi": "^3.0.3"
+    },
+    "devDependencies": {
+        "@types/ffi-napi": "^4.0.10",
+        "@types/ref-napi": "^3.0.12",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.5.4"
     }
 }

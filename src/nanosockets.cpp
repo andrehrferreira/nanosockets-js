@@ -10,6 +10,10 @@
 #define NANOSOCKETS_IMPLEMENTATION
 #include "nanosockets.h" 
 
+struct Socket {
+    int64_t handle;
+};
+
 Napi::Value Initialize(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
     NanoStatus status = nanosockets_initialize();
@@ -26,8 +30,14 @@ Napi::Value Create(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
     int sendBufferSize = info[0].As<Napi::Number>().Int32Value();
     int receiveBufferSize = info[1].As<Napi::Number>().Int32Value();
-    NanoSocket socket = nanosockets_create(sendBufferSize, receiveBufferSize);
-    return Napi::Number::New(env, socket);
+
+    int64_t socketHandle = nanosockets_create(sendBufferSize, receiveBufferSize);
+
+    Napi::Object socketObj = Napi::Object::New(env);
+    socketObj.Set("handle", Napi::Number::New(env, socketHandle));
+    socketObj.Set("IsCreated", Napi::Boolean::New(env, socketHandle > 0));
+
+    return socketObj;
 }
 
 Napi::Value Destroy(const Napi::CallbackInfo& info) {
@@ -115,7 +125,7 @@ Napi::Value Poll(const Napi::CallbackInfo& info) {
     NanoSocket socket = info[0].As<Napi::Number>().Int64Value();
     int64_t timeout = info[1].As<Napi::Number>().Int64Value();
 
-    NanoStatus status = (NanoStatus)nanosockets_poll(socket, timeout);
+    int status = nanosockets_poll(socket, timeout);
     return Napi::Number::New(env, status);
 }
 
@@ -168,23 +178,62 @@ Napi::Value IsEqual(const Napi::CallbackInfo& info) {
 
 Napi::Value SetIP(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
-    NanoAddress* address = Napi::ObjectWrap<NanoAddress>::Unwrap(info[0].As<Napi::Object>());
-    std::string ip = info[1].As<Napi::String>();
+    
+    if (info.Length() < 2) {
+        Napi::TypeError::New(env, "Expected 2 arguments: NanoAddress and IP string").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    
+    Napi::Object addressObj = info[0].As<Napi::Object>();
+    NanoAddress* address = Napi::ObjectWrap<NanoAddress>::Unwrap(addressObj);
+    
+    std::string ip = info[1].As<Napi::String>().Utf8Value();
+    
+    struct sockaddr_in sa;
+    struct sockaddr_in6 sa6;
 
-    NanoStatus status = nanosockets_address_set_ip(address, ip.c_str());
-    return Napi::Number::New(env, status);
+    if (inet_pton(AF_INET, ip.c_str(), &(sa.sin_addr)) == 1) {
+        address->ipv4.ip = sa.sin_addr;
+        address->ipv4.ffff = 0xffff;
+        memset(address->ipv4.zeros, 0, sizeof(address->ipv4.zeros));
+    } 
+    else if (inet_pton(AF_INET6, ip.c_str(), &(sa6.sin6_addr)) == 1) {
+        address->ipv6 = sa6.sin6_addr;
+        memset(&(address->ipv4), 0, sizeof(address->ipv4));
+    } 
+    else {
+        Napi::TypeError::New(env, "Invalid IP address format").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    
+    return Napi::Number::New(env, 0);
 }
 
 Napi::Value GetIP(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
-    NanoAddress* address = Napi::ObjectWrap<NanoAddress>::Unwrap(info[0].As<Napi::Object>());
-    Napi::Buffer<char> ipBuffer = info[1].As<Napi::Buffer<char>>();
-    int ipLength = info[2].As<Napi::Number>().Int32Value();
 
-    NanoStatus status = nanosockets_address_get_ip(address, ipBuffer.Data(), ipLength);
+    if (info.Length() < 3) {
+        Napi::TypeError::New(env, "Expected 3 arguments: NanoAddress, Buffer, and Length").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    
+    Napi::Object addressObj = info[0].As<Napi::Object>();
+    NanoAddress* address = Napi::ObjectWrap<NanoAddress>::Unwrap(addressObj);
+
+    Napi::Buffer<char> ipBuffer = info[1].As<Napi::Buffer<char>>();
+    char* ipData = ipBuffer.Data();
+    
+    int ipLength = info[2].As<Napi::Number>().Int32Value();
+    
+    if (ipLength <= 0 || ipLength > ipBuffer.Length()) {
+        Napi::TypeError::New(env, "Invalid buffer length").ThrowAsJavaScriptException();
+        return env.Null();
+    }
+    
+    NanoStatus status = nanosockets_address_get_ip(address, ipData, ipLength);
+    
     return Napi::Number::New(env, status);
 }
-
 
 Napi::Value GetAddress(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();
