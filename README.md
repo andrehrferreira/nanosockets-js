@@ -36,26 +36,33 @@ Here is a basic example of how to use the UDP API provided by the library:
 ```javascript
 const { UDP, Address } = require('nanosockets-js');
 
-// Initialize the UDP subsystem
 UDP.initialize();
 
-// Create a UDP socket with send and receive buffers
-const socket = UDP.create(1024, 1024);
+const server = UDP.create(256 * 1024, 256 * 1024);
 
-// Create an address from IP and port
-const address = Address.createFromIpPort('127.0.0.1', 8080);
+const address = Address.createFromIpPort('::0', 5001);
 
-// Send a message to the specified address
-UDP.send(socket, address, Buffer.from('Hello World'));
+if (UDP.bind(server, address) == 0)
+    console.log("Socket bound!");
 
-// Receive a message on the socket with the specified buffer size
-const { bytesReceived, buffer } = UDP.receive(socket, 1024);
-console.log('Received:', buffer.toString('utf-8', 0, bytesReceived));
+if (UDP.setDontFragment(server) != 0)
+    console.log("Don't fragment option error!");
 
-// Destroy the socket after use
-UDP.destroy(socket);
+if (UDP.setNonBlocking(server) != 0)
+    console.log("Non-blocking option error!");
 
-// Finalize the UDP subsystem
+while (true) {
+    const pollResult = UDP.poll(server, 15);
+    
+    if (pollResult > 0) {
+        let { bytesReceived } = UDP.receive(server, 256 * 1024);
+
+        console.log(`Message received from - IP: ${bytesReceived.address}:${bytesReceived.port}, Data: ${bytesReceived.data.toString()}`);
+        UDP.send(server, Address.createFromIpPort(bytesReceived.address, bytesReceived.port), bytesReceived.data);
+    }
+}
+
+UDP.destroy(server);
 UDP.deinitialize();
 ```
 
