@@ -1,5 +1,6 @@
 #include <napi.h>
 #include <iostream>
+#include <mutex>
 
 #if defined(_WIN32) || defined(_WIN64)
     #include <windows.h>
@@ -9,6 +10,8 @@
 
 #define NANOSOCKETS_IMPLEMENTATION
 #include "nanosockets.h" 
+
+std::mutex socketMutex;
 
 struct Socket {
     int64_t handle;
@@ -27,6 +30,7 @@ Napi::Value Deinitialize(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value Create(const Napi::CallbackInfo& info) {
+    std::lock_guard<std::mutex> lock(socketMutex);
     Napi::Env env = info.Env();
     int sendBufferSize = info[0].As<Napi::Number>().Int32Value();
     int receiveBufferSize = info[1].As<Napi::Number>().Int32Value();
@@ -41,6 +45,7 @@ Napi::Value Create(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value Destroy(const Napi::CallbackInfo& info) {
+    std::lock_guard<std::mutex> lock(socketMutex);
     Napi::Env env = info.Env();
     NanoSocket socket = info[0].As<Napi::Number>().Int64Value();
     
@@ -49,6 +54,7 @@ Napi::Value Destroy(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value Bind(const Napi::CallbackInfo& info) {
+    std::lock_guard<std::mutex> lock(socketMutex);
     Napi::Env env = info.Env();
     NanoSocket socket = info[0].As<Napi::Number>().Int64Value();
     std::string ip = info[1].As<Napi::String>();
@@ -63,6 +69,7 @@ Napi::Value Bind(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value Connect(const Napi::CallbackInfo& info) {
+    std::lock_guard<std::mutex> lock(socketMutex);
     Napi::Env env = info.Env();
     NanoSocket socket = info[0].As<Napi::Number>().Int64Value();
     std::string ip = info[1].As<Napi::String>();
@@ -77,6 +84,7 @@ Napi::Value Connect(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value SetOption(const Napi::CallbackInfo& info) {
+    std::lock_guard<std::mutex> lock(socketMutex);
     Napi::Env env = info.Env();
     NanoSocket socket = info[0].As<Napi::Number>().Int64Value();
     int level = info[1].As<Napi::Number>().Int32Value();
@@ -88,6 +96,7 @@ Napi::Value SetOption(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value GetOption(const Napi::CallbackInfo& info) {
+    std::lock_guard<std::mutex> lock(socketMutex);
     Napi::Env env = info.Env();
     NanoSocket socket = info[0].As<Napi::Number>().Int64Value();
     int level = info[1].As<Napi::Number>().Int32Value();
@@ -104,6 +113,7 @@ Napi::Value GetOption(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value SetNonBlocking(const Napi::CallbackInfo& info) {
+    std::lock_guard<std::mutex> lock(socketMutex);
     Napi::Env env = info.Env();
     NanoSocket socket = info[0].As<Napi::Number>().Int64Value();
     bool nonBlocking = info[1].As<Napi::Boolean>().Value();
@@ -113,6 +123,7 @@ Napi::Value SetNonBlocking(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value SetDontFragment(const Napi::CallbackInfo& info) {
+    std::lock_guard<std::mutex> lock(socketMutex);
     Napi::Env env = info.Env();
     NanoSocket socket = info[0].As<Napi::Number>().Int64Value();
     
@@ -121,6 +132,7 @@ Napi::Value SetDontFragment(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value Poll(const Napi::CallbackInfo& info) {
+    std::lock_guard<std::mutex> lock(socketMutex);
     Napi::Env env = info.Env();
     NanoSocket socket = info[0].As<Napi::Number>().Int64Value();
     int64_t timeout = info[1].As<Napi::Number>().Int64Value();
@@ -130,6 +142,7 @@ Napi::Value Poll(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value Send(const Napi::CallbackInfo& info) {
+    std::lock_guard<std::mutex> lock(socketMutex);
     Napi::Env env = info.Env();
     NanoSocket socket = info[0].As<Napi::Number>().Int64Value();
     std::string ip = info[1].As<Napi::String>();
@@ -145,6 +158,7 @@ Napi::Value Send(const Napi::CallbackInfo& info) {
 }
 
 Napi::Value Receive(const Napi::CallbackInfo& info) {
+    std::lock_guard<std::mutex> lock(socketMutex);
     Napi::Env env = info.Env();
     NanoSocket socket = info[0].As<Napi::Number>().Int64Value();
     int bufferSize = info[1].As<Napi::Number>().Int32Value();
