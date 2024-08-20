@@ -2,6 +2,11 @@
 
 `nanosockets-js` is a lightweight and efficient library for managing low-level socket connections in Node.js, based on the powerful [NanoSockets](https://github.com/nxrighthere/NanoSockets) library. This project uses `napi-rs` to expose a simple, fast, and efficient network interface for JavaScript developers, allowing communication via UDP sockets.
 
+| (index) |         Server          | Avg Messages/sec | % Difference |
+|---------|-------------------------|------------------|--------------|
+|    0    | Nanosockets C#          |      41,706      |    0.00%     |
+|    0    | Nanosockets Node.js     |      37,691      |    0.00%     |
+
 ## Manual Build
 
 To manual build the library:
