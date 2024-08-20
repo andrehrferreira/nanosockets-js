@@ -1,5 +1,5 @@
 const { UDP, Address } = require('./');
-const CLIENTS_TO_WAIT_FOR = 100;
+const CLIENTS_TO_WAIT_FOR = 32;
 const clients = new Map();
 const port = 5001;
 

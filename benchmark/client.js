@@ -7,7 +7,7 @@ const SERVERS = [
 ];
 
 const LOG_MESSAGES = env.LOG_MESSAGES === "1";
-const CLIENTS_TO_WAIT_FOR = 100;
+const CLIENTS_TO_WAIT_FOR = 32;
 const DELAY = 64;
 const WAIT_TIME_BETWEEN_TESTS = 5000;
 const MESSAGES_TO_SEND = [

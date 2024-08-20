@@ -1,8 +1,18 @@
 {
     "name": "nanosockets-js",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Bindings for NanoSockets in Node.js",
+    "author": "Andre Ferreira <andrehrf@gmail.com>",
+    "license": "MIT",
     "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/andrehrferreira/nanosockets-js"
+    },
+    "bugs": {
+        "url": "https://github.com/andrehrferreira/nanosockets-js/issues"
+    },
+    "homepage": "https://github.com/andrehrferreira/nanosockets-js",
     "gypfile": true,
     "scripts": {
         "build": "bash build.sh",
