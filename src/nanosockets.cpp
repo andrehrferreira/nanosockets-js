@@ -3,7 +3,6 @@
 #include <mutex>
 #include <alloca.h>
 
-
 #if defined(_WIN32) || defined(_WIN64)
     #include <windows.h>
 #else
@@ -172,7 +171,7 @@ Napi::Value Receive(const Napi::CallbackInfo& info) {
     
     Napi::Object result = Napi::Object::New(env);
     result.Set("status", Napi::Number::New(env, receiveResult));
-    result.Set("data", Napi::Buffer<uint8_t>::Copy(env, buffer.data(), receiveResult));
+    result.Set("data", Napi::Buffer<uint8_t>::Copy(env, buffer, receiveResult));
     
     char ip[INET6_ADDRSTRLEN];
     nanosockets_address_get_ip(&address, ip, sizeof(ip));
