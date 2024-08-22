@@ -1,6 +1,8 @@
 #include <napi.h>
 #include <iostream>
 #include <mutex>
+#include <alloca.h>
+
 
 #if defined(_WIN32) || defined(_WIN64)
     #include <windows.h>
@@ -163,10 +165,10 @@ Napi::Value Receive(const Napi::CallbackInfo& info) {
     NanoSocket socket = info[0].As<Napi::Number>().Int64Value();
     int bufferSize = info[1].As<Napi::Number>().Int32Value();
 
-    std::vector<uint8_t> buffer(bufferSize);
+    uint8_t* buffer = (uint8_t*)alloca(bufferSize);
     NanoAddress address;
     
-    int receiveResult = nanosockets_receive(socket, &address, buffer.data(), bufferSize);
+    int receiveResult = nanosockets_receive(socket, &address, buffer, bufferSize);
     
     Napi::Object result = Napi::Object::New(env);
     result.Set("status", Napi::Number::New(env, receiveResult));
